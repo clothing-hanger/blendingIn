@@ -1,0 +1,1 @@
+%cd%\blending\LOVE\love.exe %cd%\blending
