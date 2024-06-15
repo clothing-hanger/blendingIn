@@ -1,6 +1,8 @@
 function love.load()
     consoleTable = {"Press ALT+C to clear debug console.\nPress ALT+D to toggle debug console."}
 
+    --love.window.setMode(love.window.getDesktopDimensions())
+
     Timer = require "timer"
     baton = require "baton"
     input = baton.new {
@@ -49,7 +51,7 @@ function love.load()
     useConsole = true
     function initGame()
         peterBonusPos = {-1000,1} --x pos, opacity
-        timeRemaining = 5000
+        timeRemaining = 15
         timerTime = timeRemaining*1000
         score = 0
         combo = 0
@@ -104,7 +106,7 @@ function love.load()
         if input == curHomer then
             incrementCombo()
             pickNewHomerPos(curHomer)
-        elseif input == curEnemy and not peterFuckingGriffin then
+        elseif input == curEnemy and not PETERFUCKINGGRIFFIN then
             doGameOver(score)
             print("hit enemy")
             diedBy = "Frank Grimes"
@@ -131,12 +133,12 @@ function love.load()
         peterPercent = love.math.random(1,50)
         enemyPercent = love.math.random(1,3)
         if peterPercent == 1 then
-            peterFuckingGriffin = true
+            PETERFUCKINGGRIFFIN = true
         else
-            peterFuckingGriffin = false
+            PETERFUCKINGGRIFFIN = false
         end
         if enemyPercent == 1 then
-            if not peterFuckingGriffin then  -- temp fix because chicken doesnt count as enemy for some reason            how does this not make the chicken never appear???? the chicken literally still shows up
+            if not PETERFUCKINGGRIFFIN then  -- temp fix because chicken doesnt count as enemy for some reason            how does this not make the chicken never appear???? the chicken literally still shows up
                 enemy = true
             else
                 enemy = false
@@ -168,23 +170,25 @@ function love.load()
 
     
     doGameOver = function(score)
+        --[[
         if score > highScore then
             highScore = math.floor(score)
         end
         gameoverScreen = true
+        --]]
     end
 
 
-    checkHit = function()
+    checkHit = function(x,y)
         print("checkHit()")
         if enemy then
-            if mouseX > homiePositionsTable[curEnemy][1] and 
-            mouseX < homiePositionsTable[curEnemy][1] + homer:getWidth() and
-            mouseY > homiePositionsTable[curEnemy][2] and
-            mouseY < homiePositionsTable[curEnemy][2] + homer:getHeight() then
+            if x > homiePositionsTable[curEnemy][1] and 
+            x < homiePositionsTable[curEnemy][1] + homer:getWidth() and
+            y > homiePositionsTable[curEnemy][2] and
+            y < homiePositionsTable[curEnemy][2] + homer:getHeight() then
                 doGameOver(score)
                 print("hit enemy")
-                if peterFuckingGriffin then
+                if PETERFUCKINGGRIFFIN then
                     diedBy = "Ernie the Giant Chicken"
                 else
                     diedBy = "Frank Grimes"
@@ -192,10 +196,10 @@ function love.load()
                 return false
             end
         end
-        if mouseX > homiePositionsTable[curHomer][1] and 
-        mouseX < homiePositionsTable[curHomer][1] + homer:getWidth() and
-        mouseY > homiePositionsTable[curHomer][2] and
-        mouseY < homiePositionsTable[curHomer][2] + homer:getHeight() then
+        if x > homiePositionsTable[curHomer][1] and 
+        x < homiePositionsTable[curHomer][1] + homer:getWidth() and
+        y > homiePositionsTable[curHomer][2] and
+        y < homiePositionsTable[curHomer][2] + homer:getHeight() then
             print("hit target")
             return true
         else
@@ -245,7 +249,7 @@ function love.load()
         Timer.tween(0.2, comboDisplayValues, {[2]=1}, "out-quad")
         comboDisplayValues[3],comboDisplayValues[4] = 50,100
         score = score + 10*(combo/4)
-        if peterFuckingGriffin then 
+        if PETERFUCKINGGRIFFIN then 
             score = score*3
             doPeterBonusAlert()
         end
@@ -335,12 +339,16 @@ function love.update(dt)
     
 end
 
-function love.mousepressed()
+function love.mousepressed(x,y)
+
+    if title or gameoverScreen then 
+        initGame()
+    end
   
     if not title and not gameoverScreen then
         totalClicks = totalClicks + 1
 
-        if checkHit() then
+        if checkHit(x, y) then
             incrementCombo()
             pickNewHomerPos(curHomer)
 
@@ -363,6 +371,10 @@ function love.mousepressed()
 
     end
     
+end
+
+function love.touchpressed(id, x, y)
+    love.mousepressed(x,y)
 end
 
 function love.keypressed(key)
@@ -396,7 +408,7 @@ function love.draw()
                 love.graphics.draw(healthIcon, love.graphics.getWidth() - 25, 50)
             end
         end
-        if not peterFuckingGriffin then
+        if not PETERFUCKINGGRIFFIN then
             love.graphics.draw(homer, homiePositionsTable[curHomer][1], homiePositionsTable[curHomer][2])
             if enemy then
                 love.graphics.draw(frank, homiePositionsTable[curEnemy][1], homiePositionsTable[curEnemy][2])
@@ -472,7 +484,7 @@ function love.draw()
     end
 
 
-    --[[ DEBUG SHIT
+    ----[[ DEBUG SHIT
 
 
     --love.graphics.draw(testGraphic, 0, 0)
